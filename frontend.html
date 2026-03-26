@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PlatformMGT</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#06080d; --surface:#0d1117; --surface2:#161b22; --surface3:#1c2333;
+  --border:rgba(255,255,255,.06); --border2:rgba(255,255,255,.1); --border3:rgba(255,255,255,.15);
+  --accent:#4f8ff7; --accent2:#3672d9; --accentGlow:rgba(79,143,247,.12);
+  --green:#2dd4a0; --greenBg:rgba(45,212,160,.1); --greenBdr:rgba(45,212,160,.25);
+  --amber:#f0b429; --amberBg:rgba(240,180,41,.1); --amberBdr:rgba(240,180,41,.25);
+  --red:#f25c5c; --redBg:rgba(242,92,92,.1); --redBdr:rgba(242,92,92,.25);
+  --purple:#a78bfa; --purpleBg:rgba(167,139,250,.1);
+  --text:#d1d5db; --textBright:#f3f4f6; --muted:#6b7280; --dim:#374151;
+  --sidebar:220px; --topbar:52px;
+  --font:'DM Sans',system-ui,sans-serif; --mono:'JetBrains Mono',monospace;
+  --radius:8px; --radiusLg:12px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;-webkit-font-smoothing:antialiased;min-height:100vh}
+::selection{background:var(--accentGlow);color:var(--accent)}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:10px}
+
+/* AUTH */
+#auth{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at 50% 30%,rgba(79,143,247,.04) 0%,transparent 60%)}
+.auth-box{width:360px}
+.auth-brand{font-size:11px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.auth-title{font-size:22px;font-weight:600;color:var(--textBright);margin-bottom:24px}
+.auth-hint{background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;margin-bottom:20px;font-size:11px;color:var(--muted);line-height:1.8;font-family:var(--mono)}
+.auth-hint b{color:var(--text)}
+
+/* FORM */
+label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+input,select,textarea{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:8px 11px;color:var(--text);font-size:13px;font-family:var(--font);outline:none;transition:border .15s}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 2px var(--accentGlow)}
+select option{background:var(--surface2)}
+.fg{margin-bottom:12px}
+.row{display:flex;gap:10px}.row>*{flex:1}
+
+/* BUTTONS */
+.btn{padding:7px 14px;border-radius:6px;font-size:12px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .12s;display:inline-flex;align-items:center;gap:5px;font-family:var(--font)}
+.btn-p{background:var(--accent);color:#fff;border-color:var(--accent)}.btn-p:hover{background:var(--accent2)}
+.btn-s{background:var(--greenBg);color:var(--green);border-color:var(--greenBdr)}.btn-s:hover{background:rgba(45,212,160,.18)}
+.btn-d{background:var(--redBg);color:var(--red);border-color:var(--redBdr)}.btn-d:hover{background:rgba(242,92,92,.18)}
+.btn-g{background:transparent;color:var(--muted);border-color:var(--border2)}.btn-g:hover{background:var(--surface2);color:var(--text);border-color:var(--border3)}
+.btn-w{background:var(--amberBg);color:var(--amber);border-color:var(--amberBdr)}.btn-w:hover{background:rgba(240,180,41,.18)}
+.btn-sm{padding:4px 9px;font-size:11px}
+.btn-full{width:100%;justify-content:center}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* LAYOUT */
+#app{display:none;min-height:100vh}
+#sidebar{width:var(--sidebar);background:var(--surface);border-right:1px solid var(--border);position:fixed;top:0;left:0;height:100vh;z-index:50;display:flex;flex-direction:column;overflow-y:auto}
+.sb-brand{padding:16px 14px 12px;border-bottom:1px solid var(--border)}
+.sb-logo{font-size:10px;font-weight:700;letter-spacing:2.5px;text-transform:uppercase;color:var(--accent)}
+.sb-ver{font-size:9px;color:var(--dim);letter-spacing:1px;margin-top:1px}
+.sb-user{padding:10px 14px;background:var(--surface2);border-bottom:1px solid var(--border)}
+.sb-role{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1.2px}
+.sb-name{font-size:12px;font-weight:600;color:var(--textBright);margin-top:1px}
+.nav-sec{padding:6px 0}
+.nav-lbl{font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:1.5px;padding:6px 14px 3px}
+.nav-i{display:flex;align-items:center;gap:8px;padding:7px 14px;cursor:pointer;color:var(--muted);font-size:12px;border-left:2px solid transparent;transition:all .12s}
+.nav-i:hover{background:var(--surface2);color:var(--text)}
+.nav-i.act{background:var(--accentGlow);color:var(--accent);border-left-color:var(--accent)}
+.nav-ic{width:14px;text-align:center;font-size:11px;flex-shrink:0;opacity:.7}
+.sb-out{margin:auto 12px 12px;padding:7px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;border-radius:6px;font-size:11px;font-family:var(--font);width:calc(100% - 24px);transition:all .12s}
+.sb-out:hover{background:var(--redBg);color:var(--red);border-color:var(--redBdr)}
+
+#main{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column}
+#topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:var(--topbar);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:40}
+.pg-title{font-size:14px;font-weight:600;color:var(--textBright)}
+.tb-act{display:flex;gap:6px;align-items:center}
+#content{padding:20px;flex:1}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:18px}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px}
+.stat-v{font-size:22px;font-weight:700;line-height:1;color:var(--textBright)}
+.stat-l{font-size:10px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:.6px}
+
+/* CARD */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radiusLg);overflow:hidden}
+.card-h{padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-t{font-size:13px;font-weight:600;color:var(--textBright)}
+.card-b{padding:14px 16px}
+
+/* TABLE */
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--surface2);color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.7px;padding:8px 12px;text-align:left;font-weight:500}
+td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.01)}
+.td-a{display:flex;gap:4px;flex-wrap:wrap}
+
+/* BADGE */
+.bdg{display:inline-block;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:500}
+.bdg-g{background:var(--greenBg);color:var(--green)}.bdg-r{background:var(--redBg);color:var(--red)}
+.bdg-a{background:var(--amberBg);color:var(--amber)}.bdg-b{background:var(--accentGlow);color:var(--accent)}
+.bdg-p{background:var(--purpleBg);color:var(--purple)}.bdg-m{background:rgba(107,114,128,.12);color:var(--muted)}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px)}
+.mo-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radiusLg);width:100%;max-width:500px;max-height:85vh;overflow-y:auto}
+.mo-h{padding:14px 18px 12px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.mo-t{font-size:14px;font-weight:600;color:var(--textBright)}
+.mo-x{background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;line-height:1;padding:4px}
+.mo-x:hover{color:var(--red)}
+.mo-b{padding:14px 18px}
+.mo-f{padding:10px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:6px}
+
+/* ALERT */
+.alert{padding:8px 12px;border-radius:6px;font-size:12px;margin-bottom:12px}
+.alert-e{background:var(--redBg);border:1px solid var(--redBdr);color:#fca5a5}
+.alert-s{background:var(--greenBg);border:1px solid var(--greenBdr);color:#6ee7b7}
+
+/* MISC */
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.ph h2{font-size:17px;font-weight:700;color:var(--textBright)}
+.tabs{display:flex;gap:0;margin-bottom:16px;border-bottom:1px solid var(--border)}
+.tab{padding:8px 14px;cursor:pointer;font-size:12px;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .12s}
+.tab.act{color:var(--accent);border-bottom-color:var(--accent)}
+.tab:hover{color:var(--text)}
+.empty{text-align:center;padding:32px;color:var(--muted);font-size:12px}
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--accent);border-radius:50%;animation:spin .5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes slideIn{from{transform:translateY(-10px);opacity:0}to{transform:translateY(0);opacity:1}}
+.tg{color:var(--green)}.tr{color:var(--red)}.ta{color:var(--amber)}.tm{color:var(--muted)}
+.mt{margin-top:10px}
+.sep{height:1px;background:var(--border);margin:14px 0}
+.hidden{display:none!important}
+.search-wrap{position:relative;margin-bottom:14px}
+.search-wrap input{padding-left:30px}
+.search-wrap::before{content:"⌕";position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--dim);font-size:14px}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth">
+  <div class="auth-box">
+    <div class="auth-brand">PlatformMGT</div>
+    <div class="auth-title">Sign in</div>
+    <div class="auth-hint">
+      <b>superadmin</b> / superadmin123<br>
+      <b>platform_demo</b> / platform123<br>
+      <b>emp_demo</b> / employee123
+    </div>
+    <div id="auth-err" class="alert alert-e hidden"></div>
+    <div class="fg"><label>Username</label><input id="l-user" placeholder="username" /></div>
+    <div class="fg"><label>Password</label><input id="l-pass" type="password" placeholder="password" /></div>
+    <button class="btn btn-p btn-full" onclick="doLogin()" style="margin-top:4px;padding:9px">Sign In →</button>
+    <div class="fg" style="margin-top:14px"><label>Backend URL</label><input id="l-url" value="http://202.79.51.254:8001" /></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div id="sidebar">
+    <div class="sb-brand"><div class="sb-logo">PlatformMGT</div><div class="sb-ver">v2.1.0</div></div>
+    <div class="sb-user"><div class="sb-role" id="sb-role">—</div><div class="sb-name" id="sb-name">—</div></div>
+    <div id="sb-nav"></div>
+    <button class="sb-out" onclick="doLogout()">Sign Out</button>
+  </div>
+  <div id="main">
+    <div id="topbar"><div class="pg-title" id="tb-title">Dashboard</div><div class="tb-act" id="tb-act"></div></div>
+    <div id="content"></div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div id="mo-wrap" class="mo hidden" onclick="if(event.target===this)closeMo()">
+  <div class="mo-box">
+    <div class="mo-h"><div class="mo-t" id="mo-title"></div><button class="mo-x" onclick="closeMo()">×</button></div>
+    <div class="mo-b" id="mo-body"></div>
+    <div class="mo-f" id="mo-foot"></div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let S={token:null,rtoken:null,user:null,role:null,utype:null,page:'dashboard',api:'http://202.79.51.254:8001'};
+
+// ─── API ──────────────────────────────────────────────────────────────────────
+async function api(m,p,b=null){
+  const h={'Content-Type':'application/json'};
+  if(S.token)h['Authorization']=`Bearer ${S.token}`;
+  const o={method:m,headers:h};if(b)o.body=JSON.stringify(b);
+  let res=await fetch(S.api+p,o);
+  if(res.status===401&&S.rtoken){
+    const r2=await fetch(S.api+'/api/v1/auth/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refresh_token:S.rtoken})});
+    if(r2.ok){const d=await r2.json();S.token=d.access_token;S.rtoken=d.refresh_token;h['Authorization']=`Bearer ${S.token}`;res=await fetch(S.api+p,{...o,headers:h});}
+    else{doLogout();return;}
+  }
+  if(!res.ok){const e=await res.json();throw e;}
+  if(res.status===204)return null;
+  return res.json();
+}
+const GET=p=>api('GET',p),POST=(p,b)=>api('POST',p,b),PATCH=(p,b)=>api('PATCH',p,b),DEL=p=>api('DELETE',p),PUT=(p,b)=>api('PUT',p,b);
+
+// ─── AUTH ─────────────────────────────────────────────────────────────────────
+async function doLogin(){
+  const u=document.getElementById('l-user').value.trim(),pw=document.getElementById('l-pass').value,url=document.getElementById('l-url').value.trim();
+  S.api=url||'http://202.79.51.254:8001';
+  const errEl=document.getElementById('auth-err');errEl.classList.add('hidden');
+  try{
+    const d=await POST('/api/v1/auth/login',{username:u,password:pw});
+    S.token=d.access_token;S.rtoken=d.refresh_token;S.role=d.role;S.utype=d.user_type;
+    S.user=await GET('/api/v1/auth/me');
+    initApp();
+  }catch(e){errEl.textContent=e.detail||'Login failed';errEl.classList.remove('hidden');}
+}
+function doLogout(){S={token:null,rtoken:null,user:null,role:null,utype:null,page:'dashboard',api:S.api};document.getElementById('app').style.display='none';document.getElementById('auth').style.display='flex';}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+function initApp(){
+  document.getElementById('auth').style.display='none';document.getElementById('app').style.display='flex';
+  document.getElementById('sb-role').textContent=S.role.replace('_',' ').toUpperCase();
+  document.getElementById('sb-name').textContent=S.user.full_name||S.user.name||S.user.username;
+  buildNav();nav('dashboard');
+}
+
+function buildNav(){
+  const r=S.role,sa=r==='super_admin',pa=r==='platform_account',emp=r==='employee';
+  let sections=[];
+  sections.push({l:'Overview',items:[{id:'dashboard',ic:'◇',l:'Dashboard'}]});
+  if(sa)sections.push({l:'System',items:[{id:'platforms',ic:'◈',l:'Platforms'},{id:'admin-users',ic:'◎',l:'Admin users'}]});
+  if(sa||pa)sections.push({l:'Operations',items:[{id:'groups',ic:'▦',l:'Groups'},{id:'employees',ic:'●',l:'Employees'},{id:'games',ic:'◆',l:'Games'}]});
+  sections.push({l:'Daily work',items:[{id:'pages',ic:'▣',l:'Pages'},{id:'depositors',ic:'◐',l:'Depositors'}]});
+  if(sa||pa)sections.push({l:'HR',items:[{id:'salary-cuts',ic:'✂',l:'Salary cuts'}]});
+  sections.push({l:'Tracking',items:[{id:'follower-logs',ic:'↗',l:'Follower logs'}]});
+  if(emp)sections.push({l:'My account',items:[{id:'my-salary',ic:'$',l:'My salary'}]});
+  sections.push({l:'Analytics',items:[{id:'reports',ic:'▤',l:'Reports'}]});
+  let h='';
+  for(const s of sections){h+=`<div class="nav-sec"><div class="nav-lbl">${s.l}</div>`;for(const i of s.items)h+=`<div class="nav-i" id="nav-${i.id}" onclick="nav('${i.id}')"><span class="nav-ic">${i.ic}</span>${i.l}</div>`;h+='</div>';}
+  document.getElementById('sb-nav').innerHTML=h;
+}
+
+function nav(p){
+  S.page=p;document.querySelectorAll('.nav-i').forEach(e=>e.classList.remove('act'));
+  const n=document.getElementById('nav-'+p);if(n)n.classList.add('act');
+  document.getElementById('tb-act').innerHTML='';
+  (PAGES[p]||showEmpty)();
+}
+function setTitle(t){document.getElementById('tb-title').textContent=t}
+function setAct(h){document.getElementById('tb-act').innerHTML=h}
+function render(h){document.getElementById('content').innerHTML=h}
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function $(id){return document.getElementById(id)}
+function money(n){return parseFloat(n||0).toLocaleString('en-US',{minimumFractionDigits:2})}
+function num(n){return parseInt(n||0).toLocaleString()}
+function bdg(s){const m={active:'g',suspended:'a',archived:'m',closed:'m',resigned:'m',inactive:'m',blocked:'r',paused:'a',cashin:'g',cashout:'r',add:'g',deduct:'r',VIP:'b',VVIP:'p',super_admin:'p',platform_account:'b',employee:'g'};return `<span class="bdg bdg-${m[s]||'b'}">${s}</span>`}
+function monthNow(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function toast(msg,type='s'){const el=document.createElement('div');el.className=`alert alert-${type}`;el.style.cssText='position:fixed;top:16px;right:16px;z-index:9999;min-width:240px;animation:slideIn .2s ease;font-size:12px';el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),2500)}
+function openMo(title,body,foot){$('mo-title').textContent=title;$('mo-body').innerHTML=body;$('mo-foot').innerHTML=foot;$('mo-wrap').classList.remove('hidden')}
+function closeMo(){$('mo-wrap').classList.add('hidden')}
+function confirmDel(name,cb){const v=prompt(`⚠️ PERMANENT DELETE\n\nType "${name}" to confirm:`);if(v===name)cb();else if(v!==null)toast('Name mismatch — cancelled','e')}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+async function showDashboard(){
+  setTitle('Dashboard');render('<div class="empty"><div class="spinner"></div></div>');
+  try{
+    if(S.role==='super_admin'){
+      const[pf,au]=await Promise.all([GET('/api/v1/platforms'),GET('/api/v1/admin-users')]);
+      render(`<div class="stats">
+        <div class="stat"><div class="stat-v tg">${pf.length}</div><div class="stat-l">Platforms</div></div>
+        <div class="stat"><div class="stat-v ta">${au.length}</div><div class="stat-l">Admin users</div></div>
+        <div class="stat"><div class="stat-v tg">${pf.filter(p=>p.status==='active').length}</div><div class="stat-l">Active</div></div>
+        <div class="stat"><div class="stat-v tr">${pf.filter(p=>p.status!=='active').length}</div><div class="stat-l">Inactive</div></div>
+      </div>
+      <div class="card"><div class="card-h"><div class="card-t">All platforms</div></div><div class="tw"><table>
+        <thead><tr><th>Name</th><th>Status</th><th>Description</th><th>Created</th></tr></thead>
+        <tbody>${pf.map(p=>`<tr><td><b>${p.name}</b></td><td>${bdg(p.status)}</td><td class="tm">${p.description||'—'}</td><td class="tm">${new Date(p.created_at).toLocaleDateString()}</td></tr>`).join('')}</tbody>
+      </table></div></div>`);
+    }else if(S.role==='platform_account'){
+      const pid=S.user.platform_id;
+      const[pf,gr,em]=await Promise.all([GET(`/api/v1/platforms/${pid}`),GET('/api/v1/groups'),GET('/api/v1/employees')]);
+      render(`<div class="stats">
+        <div class="stat"><div class="stat-v tg">${gr.length}</div><div class="stat-l">Groups</div></div>
+        <div class="stat"><div class="stat-v ta">${em.length}</div><div class="stat-l">Employees</div></div>
+        <div class="stat"><div class="stat-v tg">${pf.total_pages||0}</div><div class="stat-l">Pages</div></div>
+        <div class="stat"><div class="stat-v">${em.filter(e=>e.status==='active').length}</div><div class="stat-l">Active staff</div></div>
+      </div>
+      <div class="card"><div class="card-h"><div class="card-t">${pf.name}</div><div>${bdg(pf.status)}</div></div>
+        <div class="card-b"><div class="row"><div><label>Groups</label><b>${pf.total_groups}</b></div><div><label>Employees</label><b>${pf.total_employees}</b></div><div><label>Pages</label><b>${pf.total_pages}</b></div></div></div>
+      </div>`);
+    }else{
+      const[pages,deps]=await Promise.all([GET(`/api/v1/pages?group_id=${S.user.group_id}`),GET('/api/v1/depositors')]);
+      render(`<div class="stats">
+        <div class="stat"><div class="stat-v tg">${pages.length}</div><div class="stat-l">Your pages</div></div>
+        <div class="stat"><div class="stat-v ta">${deps.length}</div><div class="stat-l">Depositors</div></div>
+        <div class="stat"><div class="stat-v tg">${pages.filter(p=>p.status==='active').length}</div><div class="stat-l">Active pages</div></div>
+      </div>
+      <div class="card"><div class="card-h"><div class="card-t">Your pages</div></div><div class="tw"><table>
+        <thead><tr><th>Name</th><th>Likes</th><th>Followers</th><th>Monthly</th><th>Status</th></tr></thead>
+        <tbody>${pages.map(p=>`<tr><td><b>${p.name}</b></td><td>${num(p.current_likes)}</td><td>${num(p.followers)}</td><td class="tg">${money(p.monthly_generated_amount)}</td><td>${bdg(p.status)}</td></tr>`).join('')||'<tr><td colspan="5" class="empty">No pages</td></tr>'}</tbody>
+      </table></div></div>`);
+    }
+  }catch(e){render(`<div class="alert alert-e">${e.detail||'Error'}</div>`)}
+}
+
+// ─── PLATFORMS ─────────────────────────────────────────────────────────────────
+async function showPlatforms(){
+  setTitle('Platforms');setAct('<button class="btn btn-p btn-sm" onclick="openPfMo()">+ New</button>');
+  render('<div class="empty"><div class="spinner"></div></div>');
+  try{
+    const d=await GET('/api/v1/platforms');
+    render(`<div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>Name</th><th>Status</th><th>Description</th><th>Created</th><th>Actions</th></tr></thead>
+      <tbody>${d.map(p=>`<tr><td class="tm">#${p.id}</td><td><b>${p.name}</b></td><td>${bdg(p.status)}</td><td class="tm">${p.description||'—'}</td><td class="tm">${new Date(p.created_at).toLocaleDateString()}</td>
+        <td><div class="td-a">
+          <button class="btn btn-g btn-sm" onclick="openPfMo(${p.id},'${esc(p.name)}','${esc(p.description||'')}','${p.status}')">Edit</button>
+          ${p.status!=='archived'?`<button class="btn btn-w btn-sm" onclick="archPf(${p.id},'${esc(p.name)}')">Archive</button>`:`<button class="btn btn-s btn-sm" onclick="restPf(${p.id})">Restore</button>`}
+          <button class="btn btn-d btn-sm" onclick="confirmDel('${esc(p.name)}',()=>hardDelPf(${p.id}))">Delete</button>
+        </div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No platforms</td></tr>'}</tbody>
+    </table></div></div>`);
+  }catch(e){render(`<div class="alert alert-e">${e.detail||'Error'}</div>`)}
+}
+function esc(s){return String(s).replace(/'/g,"\\'").replace(/"/g,'&quot;')}
+function openPfMo(id,name='',desc='',status='active'){
+  const e=!!id;
+  openMo(e?'Edit platform':'New platform',`<div id="merr" class="alert alert-e hidden"></div>
+    <div class="fg"><label>Name</label><input id="pf-n" value="${name}"/></div>
+    <div class="fg"><label>Description</label><input id="pf-d" value="${desc}"/></div>
+    ${e?`<div class="fg"><label>Status</label><select id="pf-s"><option value="active" ${status==='active'?'selected':''}>Active</option><option value="suspended" ${status==='suspended'?'selected':''}>Suspended</option></select></div>`:''}`,
+  `<button class="btn btn-g" onclick="closeMo()">Cancel</button><button class="btn btn-p" onclick="savePf(${id||'null'})">${e?'Save':'Create'}</button>`);
+}
+async function savePf(id){
+  const n=$('pf-n').value.trim(),d=$('pf-d').value.trim(),err=$('merr');
+  if(!n){err.textContent='Name required';err.classList.remove('hidden');return}
+  try{if(id){await PATCH(`/api/v1/platforms/${id}`,{name:n,description:d||null,status:$('pf-s').value});toast('Updated');}else{await POST('/api/v1/platforms',{name:n,description:d||null});toast('Created');}closeMo();showPlatforms();}
+  catch(e){err.textContent=e.detail||'Error';err.classList.remove('hidden')}
+}
+async function archPf(id,name){if(!confirm(`Archive "${name}"?`))return;try{await DEL(`/api/v1/platforms/${id}`);toast('Archived');showPlatforms();}catch(e){toast(e.detail||'Error','e')}}
+async function restPf(id){try{await PATCH(`/api/v1/platforms/${id}`,{status:'active'});toast('Restored');showPlatforms();}catch(e){toast(e.detail||'Error','e')}}
+async function hardDelPf(id){try{await api('DELETE',`/api/v1/platforms/${id}/hard`);toast('Deleted');showPlatforms();}catch(e){toast(e.detail||'Error','e')}}
+
+// ─── ADMIN USERS ──────────────────────────────────────────────────────────────
+async function showAdminUsers(){
+  setTitle('Admin users');setAct('<button class="btn btn-p btn-sm" onclick="openAuMo()">+ New</button>');
+  render('<div class="empty"><div class="spinner"></div></div>');
+  try{
+    const[users,pfs]=await Promise.all([GET('/api/v1/admin-users'),GET('/api/v1/platforms')]);
+    window._pfs=pfs;const pm={};pfs.forEach(p=>pm[p.id]=p.name);
+    render(`<div class="card"><div class="tw"><table>
+      <thead><tr><th>Username</th><th>Role</th><th>Platform</th><th>Email</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>${users.map(u=>`<tr><td><b>${u.username}</b>${u.full_name?`<div class="tm" style="font-size:10px">${u.full_name}</div>`:''}</td><td>${bdg(u.role)}</td><td>${u.platform_id?pm[u.platform_id]||'#'+u.platform_id:'<span class="tm">—</span>'}</td><td class="tm">${u.email}</td><td>${u.is_active?bdg('active'):bdg('archived')}</td>
+        <td><div class="td-a">${u.role!=='super_admin'?(u.is_active?`<button class="btn btn-w btn-sm" onclick="deactUser(${u.id},'${esc(u.username)}')">Deactivate</button>`:`<button class="btn btn-s btn-sm" onclick="restUser(${u.id})">Restore</button>`):''} ${u.role!=='super_admin'?`<button class="btn btn-d btn-sm" onclick="confirmDel('${esc(u.username)}',()=>hardDelUser(${u.id}))">Delete</button>`:''}</div></td></tr>`).join('')}</tbody>
+    </table></div></div>`);
+  }catch(e){render(`<div class="alert alert-e">${e.detail||'Error'}</div>`)}
+}
+function openAuMo(){
+  const pfs=window._pfs||[];
+  openMo('New platform account',`<div id="merr" class="alert alert-e hidden"></div>
+    <div class="row"><div class="fg"><label>Username</label><input id="au-u"/></div><div class="fg"><label>Password</label><input id="au-p" type="password"/></div></div>
+    <div class="fg"><label>Email</label><input id="au-e" type="email"/></div>
+    <div class="fg"><label>Full name</label><input id="au-n"/></div>
+    <div class="fg"><label>Platform</label><select id="au-pf"><option value="">— Select —</option>${pfs.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>`,
+  `<button class="btn btn-g" onclick="closeMo()">Cancel</button><button class="btn btn-p" onclick="saveAu()">Create</button>`);
+}
+async function saveAu(){
+  const err=$('merr'),u=$('au-u').value.trim(),p=$('au-p').value,e=$('au-e').value.trim(),n=$('au-n').value.trim(),pf=parseInt($('au-pf').value)||null;
+  if(!u||!p||!e){err.textContent='Username, password, email required';err.classList.remove('hidden');return}
+  try{await POST('/api/v1/admin-users',{username:u,password:p,email:e,full_name:n||null,role:'platform_account',platform_id:pf});toast('Created');closeMo();showAdminUsers();}
+  catch(ex){err.textContent=ex.detail||'Error';err.classList.remove('hidden')}
+}
+async function deactUser(id,u){if(!confirm(`Deactivate "${u}"?`))return;try{await DEL(`/api/v1/admin-users/${id}`);toast('Deactivated');showAdminUsers();}catch(e){toast(e.detail||'Error','e')}}
+async function restUser(id){try{await POST(`/api/v1/admin-users/${id}/restore`,{});toast('Restored');showAdminUsers();}catch(e){toast(e.detail||'Error','e')}}
+async function hardDelUser(id){try{await api('DELETE',`/api/v1/admin-users/${id}/hard`);toast('Deleted');showAdminUsers();}catch(e){toast(e.detail||'Error','e')}}
+
+// ─── GROUPS ───────────────────────────────────────────────────────────────────
+async function showGroups(){
+  setTitle('Groups');setAct('<button class="btn btn-p btn-sm" onclick="openGrMo()">+ New</button>');
+  render('<div class="empty"><div class="spinner"></div></div>');
+  try{
+    const g=await GET('/api/v1/groups');
+    render(`<div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>Name</th><th>Status</th><th>Platform</th><th>Created</th><th>Actions</th></tr></thead>
+      <tbody>${g.map(g=>`<tr><td class="tm">#${g.id}</td><td><b>${g.name}</b></td><td>${bdg(g.status)}</td><td class="tm">#${g.platform_id}</td><td class="tm">${new Date(g.created_at).toLocaleDateString()}</td>
+        <td><div class="td-a">
+          <button class="btn btn-g btn-sm" onclick="openGrMo(${g.id},'${esc(g.name)}','${g.status}')">Edit</button>
+          <button class="btn btn-g btn-sm" onclick="viewGrStats(${g.id},'${esc(g.name)}')">Stats</button>
+          ${g.status==='active'?`<button class="btn btn-w btn-sm" onclick="closeGr(${g.id},'${esc(g.name)}')">Close</button>`:`<button class="btn btn-s btn-sm" onclick="restGr(${g.id})">Restore</button>`}
+          <button class="btn btn-d btn-sm" onclick="confirmDel('${esc(g.name)}',()=>hardDelGr(${g.id}))">Delete</button>
+        </div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No groups</td></tr>'}</tbody>
+    </table></div></div>`);
+  }catch(e){render(`<div class="alert alert-e">${e.detail||'Error'}</div>`)}
+}
+function openGrMo(id,name='',status='active'){
+  const e=!!id,sa=S.role==='super_admin';
+  openMo(e?'Edit group':'New group',`<div id="merr" class="alert alert-e hidden"></div>
+    <div class="fg"><label>Name</label><input id="gr-n" value="${name}"/></div>
+    ${sa&&!e?'<div class="fg"><label>Platform ID</label><input id="gr-p" type="number"/></div>':''}
+    ${e?`<div class="fg"><label>Status</label><select id="gr-s"><option value="active" ${status==='active'?'selected':''}>Active</option><option value="closed" ${status==='closed'?'selected':''}>Closed</option></select></div>`:''}`,
+  `<button class="btn btn-g" onclick="closeMo()">Cancel</button><button class="btn btn-p" onclick="saveGr(${id||'null'})">${e?'Save':'Create'}</button>`);
+}
+async function saveGr(id){
+  const n=$('gr-n').value.trim(),err=$('merr');if(!n){err.textContent='Name required';err.classList.remove('hidden');return}
+  try{if(id){await PATCH(`/api/v1/groups/${id}`,{name:n,status:$('gr-s').value});toast('Updated');}else{const b={name:n};const pe=$('gr-p');if(pe)b.platform_id=parseInt(pe.value)||null;await POST('/api/v1/groups',b);toast('Created');}closeMo();showGroups();}
+  catch(e){err.textContent=e.detail||'Error';err.classList.remove('hidden')}
+}
+async function viewGrStats(id,name){
+  try{const s=await GET(`/api/v1/groups/${id}/stats`);
+    openMo(`Stats — ${name}`,`<div class="stats"><div class="stat"><div class="stat-v">${s.employee_count}</div><div class="stat-l">Employees</div></div><div class="stat"><div class="stat-v">${s.page_count}</div><div class="stat-l">Pages</div></div><div class="stat"><div class="stat-v">${s.depositor_count}</div><div class="stat-l">Depositors</div></div><div class="stat"><div class="stat-v tg">${money(s.total_cashin)}</div><div class="stat-l">Cash in</div></div><div class="stat"><div class="stat-v tr">${money(s.total_cashout)}</div><div class="stat-l">Cash out</div></div><div class="stat"><div class="stat-v tg">${money(s.balance)}</div><div class="stat-l">Balance</div></div></div>`,
+    '<button class="btn btn-g" onclick="closeMo()">Close</button>');
+  }catch(e){toast(e.detail||'Error','e')}
+}
+async function closeGr(id,n){if(!confirm(`Close group "${n}"?`))return;try{await DEL(`/api/v1/groups/${id}`);toast('Closed');showGroups();}catch(e){toast(e.detail||'Error','e')}}
+async function restGr(id){try{await POST(`/api/v1/groups/${id}/restore`,{});toast('Restored');showGroups();}catch(e){toast(e.detail||'Error','e')}}
+async function hardDelGr(id){try{await api('DELETE',`/api/v1/groups/${id}/hard`);toast('Deleted');showGroups();}catch(e){toast(e.detail||'Error','e')}}
+
+// ─── EMPLOYEES ────────────────────────────────────────────────────────────────
+async function showEmployees(){
+  setTitle('Employees');setAct('<button class="btn btn-p btn-sm" onclick="openEmMo()">+ New</button>');
+  render('<div class="empty"><div class="spinner"></div></div>');
+  try{
+    const[emps,grs]=await Promise.all([GET('/api/v1/employees'),GET('/api/v1/groups')]);
+    window._grs=grs;const gm={};grs.forEach(g=>gm[g.id]=g.name);
+    render(`<div class="card"><div class="tw"><table>
+      <thead><tr><th>Username</th><th>Name</th><th>Group</th><th>Shift</th><th>Salary</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>${emps.map(e=>`<tr><td><b>${e.username}</b></td><td>${e.name}</td><td class="tm">${gm[e.group_id]||'#'+e.group_id}</td><td class="tm">${e.shift_start||'—'} – ${e.shift_end||'—'}</td><td class="tg">${money(e.final_salary||0)}</td><td>${bdg(e.status)}</td>
+        <td><div class="td-a">
+          <button class="btn btn-g btn-sm" onclick="resetEmpPw(${e.id},'${esc(e.username)}')">Reset PW</button>
+          ${e.status==='active'?`<button class="btn btn-w btn-sm" onclick="resignEmp(${e.id},'${esc(e.name)}')">Resign</button>`:`<button class="btn btn-s btn-sm" onclick="restEmp(${e.id})">Restore</button>`}
+          <button class="btn btn-d btn-sm" onclick="confirmDel('${esc(e.name)}',()=>hardDelEmp(${e.id}))">Delete</button>
+        </div></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No employees</td></tr>'}</tbody>
+    </table></div></div>`);
+  }catch(e){render(`<div class="alert alert-e">${e.detail||'Error'}</div>`)}
+}
+function openEmMo(){
+  const grs=window._grs||[];
+  openMo('New employee',`<div id="merr" class="alert alert-e hidden"></div>
+    <div class="row"><div class="fg"><label>Username</label><input id="em-u"/></div><div class="fg"><label>Password</label><input id="em-p" type="password"/></div></div>
+    <div class="fg"><label>Full name</label><input id="em-n"/></div>
+    <div class="fg"><label>Group</label><select id="em-g"><option value="">— Select —</option>${grs.filter(g=>g.status==='active').map(g=>`<option value="${g.id}">${g.name}</option>`).join('')}</select></div>
+    <div class="row"><div class="fg"><label>Shift start</label><input id="em-ss" placeholder="09:00"/></div><div class="fg"><label>Shift end</label><input id="em-se" placeholder="17:00"/></div></div>
+    <div class="row"><div class="fg"><label>Base salary</label><input id="em-sal" type="number" value="0"/></div><div class="fg"><label>Fine amount</label><input id="em-fine" type="number" value="0"/></div></div>`,
+  `<button class="btn btn-g" onclick="closeMo()">Cancel</button><button class="btn btn-p" onclick="saveEm()">Create</button>`);
+}
+async function saveEm(){
+  const err=$('merr'),b={username:$('em-u').value.trim(),password:$('em-p').value,name:$('em-n').value.trim(),group_id:parseInt($('em-g').value)||null,shift_start:$('em-ss').value.trim()||null,shift_end:$('em-se').value.trim()||null,base_salary:parseFloat($('em-sal').value)||0,fine_amount:parseFloat($('em-fine').value)||0};
+  if(!b.username||!b.password||!b.name||!b.group_id){err.textContent='All fields required';err.classList.remove('hidden');return}
+  try{await POST('/api/v1/employees',b);toast('Created');closeMo();showEmployees();}catch(e){err.textContent=e.detail||'Error';err.classList.remove('hidden')}
+}
+function resetEmpPw(id,u){openMo(`Reset password — ${u}`,`<div id="merr" class="alert alert-e hidden"></div><div class="fg"><label>New password</label><input id="rp-pw" type="password"/></div>`,`<button class="btn btn-g" onclick="closeMo()">Cancel</button><button class="btn btn-d" onclick="doResetPw(${id})">Reset</button>`)}
+async function doResetPw(id){const pw=$('rp-pw').value;if(pw.length<6){$('merr').textContent='Min 6 chars';$('merr').classList.remove('hidden');return}try{await POST(`/api/v1/employees/${id}/reset-password`,{new_password:pw});toast('Reset');closeMo();}catch(e){$('merr').textContent=e.detail||'Error';$('merr').classList.remove('hidden')}}
+async function resignEmp(id,n){if(!confirm(`Resign "${n}"?`))return;try{await DEL(`/api/v1/employees/${id}`);toast('Resigned');showEmployees();}catch(e){toast(e.detail||'Error','e')}}
+async function restEmp(id){try{await POST(`/api/v1/employees/${id}/restore`,{});toast('Restored');showEmployees();}catch(e){toast(e.detail||'Error','e')}}
+async function hardDelEmp(id){try{await api('DELETE',`/api/v1/employees/${id}/hard`);toast('Deleted');showEmployees();}catch(e){toast(e.detail||'Error','e')}}
+
+// ─── PAGES ────────────────────────────────────────────────────────────────────
+async function showPages(){
+  setTitle('Pages');setAct('<button class="btn btn-p btn-sm" onclick="openPgMo()">+ New</button>');
+  render('<div class="empty"><div class="spinner"></div></div>');
+  try{
+    const pages=await GET('/api/v1/pages');let grs=[];try{grs=await GET('/api/v1/groups');}catch(e){}
+    window._grs=grs;window._pgs=pages;const gm={};grs.forEach(g=>gm[g.id]=g.name);
+    render(`<div class="card"><div class="tw"><table>
+      <thead><tr><th>Name</th><th>Group</th><th>Likes</th><th>Followers</th><th>Monthly</th><th>Status</th><th>Actions</th></tr></thead>
+      <tbody>${pages.map(p=>`<tr><td><b>${p.name}</b></td><td class="tm">${gm[p.group_id]||'#'+p.group_id}</td><td>${num(p.current_likes)}</td><td>${num(p.followers)}</td><td class="tg">${money(p.monthly_generated_amount)}</td><td>${bdg(p.status)}</td>
+        <td><div class="td-a">
+          <button class="btn btn-g btn-sm" onclick="openPgMo(${p.id},${p.group_id},'${esc(p.name)}',${p.current_likes},${p.followers},${p.monthly_generated_amount})">Edit</button>
+          <button class="btn btn-g btn-sm" onclick="viewDepsByPage(${p.id},'${esc(p.name)}')">Depositors</button>
+          ${p.status==='active'?`<button class="btn btn-w btn-sm" onclick="deactPg(${p.id},'${esc(p.name)}')">Deactivate</button>`:`<button class="btn btn-s btn-sm" onclick="restPg(${p.id})">Restore</button>`}
+          <button class="btn btn-d btn-sm" onclick="confirmDel('${esc(p.name)}',()=>hardDelPg(${p.id}))">Delete</button>
+        </div></td></tr>`).join('')||'<tr><td colspan="7" class="empty">No pages</td></tr>'}</tbody>
+    </table></div></div>`);
+  }catch(e){render(`<div class="alert alert-e">${e.detail||'Error'}</div>`)}
+}
+function openPgMo(id,gid,name='',likes=0,followers=0,amount=0){
+  const e=!!id,grs=window._grs||[],emp=S.role==='employee',dg=emp?S.user.group_id:(gid||'');
+  openMo(e?'Edit page':'New page',`<div id="merr" class="alert alert-e hidden"></div>
+    <div class="fg"><label>Name</label><input id="pg-n" value="${name}"/></div>
+    ${!e&&!emp?`<div class="fg"><label>Group</label><select id="pg-g"><option value="">— Select —</option>${grs.filter(g=>g.status==='active').map(g=>`<option value="${g.id}" ${g.id==dg?'selected':''}>${g.name}</option>`).join('')}</select></div>`:`<input type="hidden" id="pg-g" value="${dg}"/>`}
+    <div class="row"><div class="fg"><label>Likes</label><input id="pg-l" type="number" value="${likes}"/></div><div class="fg"><label>Followers</label><input id="pg-f" type="number" value="${followers}"/></div></div>
+    <div class="fg"><label>Monthly amount</label><input id="pg-a" type="number" step="0.01" value="${amount}"/></div>`,
+  `<button class="btn btn-g" onclick="closeMo()">Cancel</button><button class="btn btn-p" onclick="savePg(${id||'null'})">${e?'Save':'Create'}</button>`);
+}
+async function savePg(id){
+  const err=$('merr'),n=$('pg-n').value.trim(),gid=parseInt($('pg-g').value)||(S.user.group_id||null),l=parseInt($('pg-l').value)||0,f=parseInt($('pg-f').value)||0,a=parseFloat($('pg-a').value)||0;
+  if(!n){err.textContent='Name required';err.classList.remove('hidden');return}
+  try{if(id){await PATCH(`/api/v1/pages/${id}`,{name:n,current_likes:l,followers:f,monthly_generated_amount:a});toast('Updated');}else{await POST('/api/v1/pages',{name:n,group_id:gid,current_likes:l,followers:f,monthly_generated_amount:a});toast('Created');}closeMo();showPages();}
+  catch(e){err.textContent=e.detail||'Error';err.classList.remove('hidden')}
+}
+async function deactPg(id,n){if(!confirm(`Deactivate "${n}"?`))return;try{await DEL(`/api/v1/pages/${id}`);toast('Deactivated');showPages();}catch(e){toast(e.detail||'Error','e')}}
+async function restPg(id){try{await POST(`/api/v1/pages/${id}/restore`,{});toast('Restored');showPages();}catch(e){toast(e.detail||'Error','e')}}
+async function hardDelPg(id){try{await api('DELETE',`/api/v1/pages/${id}/hard`);toast('Deleted');showPages();}catch(e){toast(e.detail||'Error','e')}}
+
+// ─── DEPOSITORS ───────────────────────────────────────────────────────────────
+let _depFilter=null;
+function viewDepsByPage(pid,pn){_depFilter={id:pid,name:pn};nav('depositors');}
+async function showDepositors(){
+  setTitle('Depositors');setAct('<button class="btn btn-p btn-sm" onclick="openDepMo()">+ Add</button>');
+  render('<div class="empty"><div class="spinner"></div></div>');
+  try{
+    let url='/api/v1/depositors';if(_depFilter)url+=`?page_id=${_depFilter.id}`;
+    const[deps,pgs]=await Promise.all([GET(url),GET('/api/v1/pages')]);
+    window._pgs=pgs;const pm={};pgs.forEach(p=>pm[p.id]=p.name);
+    render(`${_depFilter?`<div class="alert alert-s">Showing depositors for: <b>${_depFilter.name}</b> — <a href="#" onclick="_depFilter=null;showDepositors()" style="color:var(--accent)">Clear</a></div>`:''}
+      <div class="card"><div class="tw"><table>
+        <thead><tr><th>Name</th><th>Page</th><th>Label</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody>${deps.map(d=>`<tr><td><b>${d.name}</b></td><td class="tm">${pm[d.page_id]||'#'+d.page_id}</td><td>${bdg(d.label||'VIP')}</td><td>${bdg(d.status)}</td>
+          <td><div class="td-a">
+            <button class="btn btn-g btn-sm" onclick="openTxMo(${d.id},'${esc(d.name)}')">Transactions</button>
+            ${d.status==='active'?`<button class="btn btn-w btn-sm" onclick="blockDep(${d.id},'${esc(d.name)}')">Block</button>`:`<button class="btn btn-s btn-sm" onclick="restDep(${d.id})">Unblock</button>`}
+            <button class="btn btn-d btn-sm" onclick="confirmDel('${esc(d.name)}',()=>hardDelDep(${d.id}))">Delete</button>
+          </div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No depositors</td></tr>'}</tbody>
+      </table></div></div>`);
+  }catch(e){render(`<div class="alert alert-e">${e.detail||'Error'}</div>`)}
+}
+function openDepMo(){
+  const pgs=window._pgs||[],emp=S.role==='employee',fp=emp?pgs.filter(p=>p.group_id===S.user.group_id&&p.status==='active'):pgs.filter(p=>p.status==='active');
+  openMo('Add depositor',`<div id="merr" class="alert alert-e hidden"></div>
+    <div class="fg"><label>Name</label><input id="dp-n"/></div>
+    <div class="fg"><label>Page</label><select id="dp-p"><option value="">— Select —</option>${fp.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div>
+    <div class="fg"><label>Profile link</label><input id="dp-l" placeholder="https://..."/></div>
+    <div class="fg"><label>Label</label><select id="dp-lb"><option>VIP</option><option>VVIP</option><option>Custom</option></select></div>`,
+  `<button class="btn btn-g" onclick="closeMo()">Cancel</button><button class="btn btn-p" onclick="saveDep()">Add</button>`);
+}
+async function saveDep(){
+  const err=$('merr'),n=$('dp-n').value.trim(),pid=parseInt($('dp-p').value)||null,l=$('dp-l').value.trim()||null,lb=$('dp-lb').value;
+  if(!n||!pid){err.textContent='Name and page required';err.classList.remove('hidden');return}
+  try{await POST('/api/v1/depositors',{name:n,page_id:pid,profile_link:l,label:lb});toast('Added');closeMo();showDepositors();}catch(e){err.textContent=e.detail||'Error';err.classList.remove('hidden')}
+}
+async function blockDep(id,n){if(!confirm(`Block "${n}"?`))return;try{await DEL(`/api/v1/depositors/${id}`);toast('Blocked');showDepositors();}catch(e){toast(e.detail||'Error','e')}}
+async function restDep(id){try{await POST(`/api/v1/depositors/${id}/restore`,{});toast('Unblocked');showDepositors();}catch(e){toast(e.detail||'Error','e')}}
+async function hardDelDep(id){try{await api('DELETE',`/api/v1/depositors/${id}/hard`);toast('Deleted');showDepositors();}catch(e){toast(e.detail||'Error','e')}}
+
+function openTxMo(depId,name){
+  openMo(`Transactions — ${name}`,`<div id="merr" class="alert alert-e hidden"></div><div id="tx-list"><div class="empty"><div class="spinner"></div></div></div>
+    <div class="sep"></div><div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--textBright)">New transaction</div>
+    <div class="row"><div class="fg"><label>Type</label><select id="tx-t"><option value="cashin">Cash In</option><option value="cashout">Cash Out</option></select></div><div class="fg"><label>Amount</label><input id="tx-a" type="number" step="0.01"/></div></div>
+    <div class="fg"><label>Note</label><input id="tx-n" placeholder="Optional"/></div>`,
+  `<button class="btn btn-g" onclick="closeMo()">Close</button><button class="btn btn-s" onclick="saveTx(${depId})">Record</button>`);
+  loadTx(depId);
+}
+async function loadTx(id){
+  try{const txs=await GET(`/api/v1/depositors/${id}/transactions?limit=15`);
+    $('tx-list').innerHTML=txs.length?`<div class="tw"><table><thead><tr><th>Type</th><th>Amount</th><th>Note</th><th>Date</th></tr></thead><tbody>${txs.map(t=>`<tr><td>${bdg(t.type)}</td><td class="${t.type==='cashin'?'tg':'tr'}">${money(t.amount)}</td><td class="tm">${t.reference_note||'—'}</td><td class="tm">${new Date(t.created_at).toLocaleDateString()}</td></tr>`).join('')}</tbody></table></div>`:'<div class="tm" style="font-size:11px">No transactions yet</div>';
+  }catch(e){}
+}
+async function saveTx(id){
+  const err=$('merr'),t=$('tx-t').value,a=parseFloat($('tx-a').value),n=$('tx-n').value.trim()||null;
+  if(!a||a<=0){err.textContent='Enter valid amount';err.classList.remove('hidden');return}
+  try{await POST(`/api/v1/depositors/${id}/transactions`,{type:t,amount:a,reference_note:n});toast('Recorded');$('tx-a').value='';$('tx-n').value='';err.classList.add('hidden');loadTx(id);}
+  catch(e){err.textContent=e.detail||'Error';err.classList.remove('hidden')}
+}
+
+// ─── GAMES ────────────────────────────────────────────────────────────────────
+async function showGames(){
+  setTitle('Games');const can=['super_admin','platform_account'].includes(S.role);
+  if(can)setAct('<button class="btn btn-p btn-sm" onclick="openGmMo()">+ Add</button>');
+  render('<div class="empty"><div class="spinner"></div></div>');
+  try{
+    const games=await GET('/api/v1/games');let grs=[];try{grs=await GET('/api/v1/groups');}catch(e){}window._grs=grs;const gm={};grs.forEach(g=>gm[g.id]=g.name);
+    render(`<div class="card"><div class="tw"><table>
+      <thead><tr><th>Name</th><th>Group</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead>
+      <tbody>${games.map(g=>`<tr><td><b>${g.name}</b></td><td class="tm">${gm[g.group_id]||'#'+g.group_id}</td><td>${bdg(g.status)}</td><td class="tm">${new Date(g.created_at).toLocaleDateString()}</td>
+        <td><div class="td-a">
+          <button class="btn btn-g btn-sm" onclick="openCoinMo(${g.id},'${esc(g.name)}')">Coins</button>
+          ${can?(g.status==='active'?`<button class="btn btn-w btn-sm" onclick="pauseGm(${g.id},'${esc(g.name)}')">Pause</button>`:`<button class="btn btn-s btn-sm" onclick="restGm(${g.id})">Resume</button>`):''}
+          ${can?`<button class="btn btn-d btn-sm" onclick="confirmDel('${esc(g.name)}',()=>hardDelGm(${g.id}))">Delete</button>`:''}
+        </div></td></tr>`).join('')||'<tr><td colspan="5" class="empty">No games</td></tr>'}</tbody>
+    </table></div></div>`);
+  }catch(e){render(`<div class="alert alert-e">${e.detail||'Error'}</div>`)}
+}
+function openGmMo(){
+  const grs=window._grs||[];
+  openMo('Add game',`<div id="merr" class="alert alert-e hidden"></div><div class="fg"><label>Name</label><input id="gm-n"/></div>
+    <div class="fg"><label>Group</label><select id="gm-g"><option value="">— Select —</option>${grs.filter(g=>g.status==='active').map(g=>`<option value="${g.id}">${g.name}</option>`).join('')}</select></div>`,
+  `<button class="btn btn-g" onclick="closeMo()">Cancel</button><button class="btn btn-p" onclick="saveGm()">Create</button>`);
+}
+async function saveGm(){
+  const err=$('merr'),n=$('gm-n').value.trim(),gid=parseInt($('gm-g').value)||null;
+  if(!n||!gid){err.textContent='Required';err.classList.remove('hidden');return}
+  try{await POST('/api/v1/games',{name:n,group_id:gid});toast('Created');closeMo();showGames();}catch(e){err.textContent=e.detail||'Error';err.classList.remove('hidden')}
+}
+async function pauseGm(id,n){if(!confirm(`Pause "${n}"?`))return;try{await DEL(`/api/v1/games/${id}`);toast('Paused');showGames();}catch(e){toast(e.detail||'Error','e')}}
+async function restGm(id){try{await POST(`/api/v1/games/${id}/restore`,{});toast('Resumed');showGames();}catch(e){toast(e.detail||'Error','e')}}
+async function hardDelGm(id){try{await api('DELETE',`/api/v1/games/${id}/hard`);toast('Deleted');showGames();}catch(e){toast(e.detail||'Error','e')}}
+function openCoinMo(gid,name){
+  openMo(`Coins — ${name}`,`<div id="merr" class="alert alert-e hidden"></div><div id="coin-list"><div class="empty"><div class="spinner"></div></div></div>
+    <div class="sep"></div><div style="font-size:12px;font-weight:600;margin-bottom:8px;color:var(--textBright)">New entry</div>
+    <div class="row"><div class="fg"><label>Type</label><select id="co-t"><option value="add">Add</option><option value="deduct">Deduct</option></select></div><div class="fg"><label>Amount</label><input id="co-a" type="number" step="0.01"/></div></div>
+    <div class="fg"><label>Reason</label><input id="co-r" placeholder="Optional"/></div>`,
+  `<button class="btn btn-g" onclick="closeMo()">Close</button><button class="btn btn-s" onclick="saveCoin(${gid})">Record</button>`);
+  loadCoins(gid);
+}
+async function loadCoins(id){
+  try{const c=await GET(`/api/v1/games/${id}/coins?limit=15`);
+    $('coin-list').innerHTML=c.length?`<div class="tw"><table><thead><tr><th>Type</th><th>Amount</th><th>Reason</th><th>Date</th></tr></thead><tbody>${c.map(c=>`<tr><td>${bdg(c.transaction_type)}</td><td class="${c.transaction_type==='add'?'tg':'tr'}">${money(c.coin_amount)}</td><td class="tm">${c.reason||'—'}</td><td class="tm">${new Date(c.created_at).toLocaleDateString()}</td></tr>`).join('')}</tbody></table></div>`:'<div class="tm" style="font-size:11px">No history</div>';
+  }catch(e){}
+}
+async function saveCoin(id){
+  const err=$('merr'),t=$('co-t').value,a=parseFloat($('co-a').value),r=$('co-r').value.trim()||null;
+  if(!a||a<=0){err.textContent='Enter amount';err.classList.remove('hidden');return}
+  try{await POST(`/api/v1/games/${id}/coins`,{transaction_type:t,coin_amount:a,reason:r});toast('Recorded');$('co-a').value='';$('co-r').value='';err.classList.add('hidden');loadCoins(id);}
+  catch(e){err.textContent=e.detail||'Error';err.classList.remove('hidden')}
+}
+
+// ─── SALARY CUTS ──────────────────────────────────────────────────────────────
+async function showSalaryCuts(){
+  setTitle('Salary cuts');setAct('<button class="btn btn-p btn-sm" onclick="openScMo()">+ Add cut</button>');
+  render('<div class="empty"><div class="spinner"></div></div>');
+  try{
+    const cuts=await GET('/api/v1/salary-cuts');
+    render(`<div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>Employee</th><th>Date</th><th>Amount</th><th>Reason</th><th>Actions</th></tr></thead>
+      <tbody>${cuts.map(c=>`<tr><td class="tm">#${c.id}</td><td>Employee #${c.employee_id}</td><td class="tm">${new Date(c.cut_date).toLocaleDateString()}</td><td class="tr">${money(c.amount)}</td><td class="tm">${c.reason||'—'}</td>
+        <td><button class="btn btn-d btn-sm" onclick="delSc(${c.id})">Remove</button></td></tr>`).join('')||'<tr><td colspan="6" class="empty">No salary cuts</td></tr>'}</tbody>
+    </table></div></div>`);
+  }catch(e){render(`<div class="alert alert-e">${e.detail||'Error'}</div>`)}
+}
+function openScMo(){
+  openMo('Add salary cut',`<div id="merr" class="alert alert-e hidden"></div>
+    <div class="fg"><label>Employee ID</label><input id="sc-eid" type="number"/></div>
+    <div class="fg"><label>Cut date</label><input id="sc-date" type="date"/></div>
+    <div class="fg"><label>Amount</label><input id="sc-amt" type="number" step="0.01"/></div>
+    <div class="fg"><label>Reason</label><input id="sc-rsn"/></div>`,
+  `<button class="btn btn-g" onclick="closeMo()">Cancel</button><button class="btn btn-p" onclick="saveSc()">Add</button>`);
+}
+async function saveSc(){
+  const err=$('merr'),eid=parseInt($('sc-eid').value),d=$('sc-date').value,a=parseFloat($('sc-amt').value),r=$('sc-rsn').value.trim();
+  if(!eid||!d||!a){err.textContent='All fields required';err.classList.remove('hidden');return}
+  try{await POST('/api/v1/salary-cuts',{employee_id:eid,cut_date:new Date(d).toISOString(),amount:a,reason:r||null});toast('Added');closeMo();showSalaryCuts();}
+  catch(e){err.textContent=e.detail||'Error';err.classList.remove('hidden')}
+}
+async function delSc(id){if(!confirm('Remove this salary cut?'))return;try{await DEL(`/api/v1/salary-cuts/${id}`);toast('Removed');showSalaryCuts();}catch(e){toast(e.detail||'Error','e')}}
+
+// ─── FOLLOWER LOGS ────────────────────────────────────────────────────────────
+async function showFollowerLogs(){
+  setTitle('Follower logs');
+  const isEmp=S.role==='employee';
+  if(isEmp)setAct('<button class="btn btn-p btn-sm" onclick="openFlMo()">+ Log followers</button>');
+  render('<div class="empty"><div class="spinner"></div></div>');
+  try{
+    const logs=await GET('/api/v1/follower-logs?limit=50');
+    render(`<div class="card"><div class="tw"><table>
+      <thead><tr><th>ID</th><th>Page</th><th>Employee</th><th>Date</th><th>Count</th><th>Shift</th><th>Notes</th></tr></thead>
+      <tbody>${logs.map(l=>`<tr><td class="tm">#${l.id}</td><td>Page #${l.page_id}</td><td>Emp #${l.employee_id}</td><td class="tm">${new Date(l.log_date).toLocaleDateString()}</td><td class="tg">${num(l.follower_count)}</td><td>${l.shift_label||'—'}</td><td class="tm">${l.notes||'—'}</td></tr>`).join('')||'<tr><td colspan="7" class="empty">No logs</td></tr>'}</tbody>
+    </table></div></div>`);
+  }catch(e){render(`<div class="alert alert-e">${e.detail||'Error'}</div>`)}
+}
+function openFlMo(){
+  openMo('Log followers',`<div id="merr" class="alert alert-e hidden"></div>
+    <div class="fg"><label>Page ID</label><input id="fl-pid" type="number"/></div>
+    <div class="fg"><label>Date</label><input id="fl-date" type="date" value="${new Date().toISOString().split('T')[0]}"/></div>
+    <div class="fg"><label>Follower count</label><input id="fl-cnt" type="number"/></div>
+    <div class="fg"><label>Shift label</label><input id="fl-shift" placeholder="Shift 1, Morning, etc."/></div>
+    <div class="fg"><label>Notes</label><input id="fl-notes"/></div>`,
+  `<button class="btn btn-g" onclick="closeMo()">Cancel</button><button class="btn btn-p" onclick="saveFl()">Log</button>`);
+}
+async function saveFl(){
+  const err=$('merr'),pid=parseInt($('fl-pid').value),d=$('fl-date').value,cnt=parseInt($('fl-cnt').value),sh=$('fl-shift').value.trim()||null,notes=$('fl-notes').value.trim()||null;
+  if(!pid||!d||isNaN(cnt)){err.textContent='Page, date, count required';err.classList.remove('hidden');return}
+  try{await POST('/api/v1/follower-logs',{page_id:pid,log_date:new Date(d).toISOString(),follower_count:cnt,shift_label:sh,notes:notes});toast('Logged');closeMo();showFollowerLogs();}
+  catch(e){err.textContent=e.detail||'Error';err.classList.remove('hidden')}
+}
+
+// ─── MY SALARY (Employee) ─────────────────────────────────────────────────────
+async function showMySalary(){
+  setTitle('My salary');render('<div class="empty"><div class="spinner"></div></div>');
+  try{
+    const d=await GET('/api/v1/salary-cuts/me');
+    render(`<div class="stats">
+      <div class="stat"><div class="stat-v">${money(d.base_salary)}</div><div class="stat-l">Base salary</div></div>
+      <div class="stat"><div class="stat-v tr">${money(d.total_deductions)}</div><div class="stat-l">Total deductions</div></div>
+      <div class="stat"><div class="stat-v tg">${money(d.net_salary)}</div><div class="stat-l">Net salary</div></div>
+    </div>
+    ${d.salary_cuts.length?`<div class="card"><div class="card-h"><div class="card-t">Salary cuts</div></div><div class="tw"><table>
+      <thead><tr><th>Date</th><th>Amount</th><th>Reason</th></tr></thead>
+      <tbody>${d.salary_cuts.map(c=>`<tr><td class="tm">${new Date(c.cut_date).toLocaleDateString()}</td><td class="tr">${money(c.amount)}</td><td class="tm">${c.reason||'—'}</td></tr>`).join('')}</tbody>
+    </table></div></div>`:'<div class="card"><div class="card-b"><div class="empty">No salary cuts recorded</div></div></div>'}`);
+  }catch(e){render(`<div class="alert alert-e">${e.detail||'Error'}</div>`)}
+}
+
+// ─── REPORTS ──────────────────────────────────────────────────────────────────
+async function showReports(){
+  setTitle('Reports');
+  const isAdmin=['super_admin','platform_account'].includes(S.role);
+  render(`<div class="tabs">
+      <div class="tab act" id="tab-group" onclick="switchRpt('group')">Group</div>
+      ${isAdmin?'<div class="tab" id="tab-platform" onclick="switchRpt(\'platform\')">Platform</div>':''}
+      <div class="tab" id="tab-page" onclick="switchRpt('page')">Page</div>
+    </div><div id="rpt-area"></div>`);
+  switchRpt('group');
+}
+async function switchRpt(tab){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('act'));const te=$('tab-'+tab);if(te)te.classList.add('act');
+  const m=monthNow();
+  if(tab==='group'){
+    let grs=[];try{if(['super_admin','platform_account'].includes(S.role))grs=await GET('/api/v1/groups');else grs=[{id:S.user.group_id,name:'My Group'}];}catch(e){}
+    $('rpt-area').innerHTML=`<div class="card"><div class="card-b"><div class="row" style="max-width:460px"><div class="fg"><label>Group</label><select id="rpt-gid">${grs.map(g=>`<option value="${g.id}">${g.name}</option>`).join('')}</select></div><div class="fg"><label>Month</label><input id="rpt-m" type="month" value="${m}"/></div></div><button class="btn btn-p mt" onclick="runGrRpt()">Generate</button></div></div><div id="rpt-res" class="mt"></div>`;
+  }else if(tab==='platform'){
+    let pfs=[];try{pfs=await GET('/api/v1/platforms');}catch(e){}
+    $('rpt-area').innerHTML=`<div class="card"><div class="card-b"><div class="row" style="max-width:460px"><div class="fg"><label>Platform</label><select id="rpt-pid">${pfs.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div><div class="fg"><label>Month</label><input id="rpt-m" type="month" value="${m}"/></div></div><button class="btn btn-p mt" onclick="runPfRpt()">Generate</button></div></div><div id="rpt-res" class="mt"></div>`;
+  }else{
+    let pgs=[];try{pgs=await GET('/api/v1/pages');}catch(e){}
+    $('rpt-area').innerHTML=`<div class="card"><div class="card-b"><div class="row" style="max-width:460px"><div class="fg"><label>Page</label><select id="rpt-pgid">${pgs.map(p=>`<option value="${p.id}">${p.name}</option>`).join('')}</select></div><div class="fg"><label>Month</label><input id="rpt-m" type="month" value="${m}"/></div></div><button class="btn btn-p mt" onclick="runPgRpt()">Generate</button></div></div><div id="rpt-res" class="mt"></div>`;
+  }
+}
+async function runGrRpt(){
+  const el=$('rpt-res');el.innerHTML='<div class="empty"><div class="spinner"></div></div>';
+  try{const r=await GET(`/api/v1/reports/groups/${$('rpt-gid').value}?month=${$('rpt-m').value}`);
+    el.innerHTML=`<div class="stats"><div class="stat"><div class="stat-v tg">${money(r.total_page_revenue)}</div><div class="stat-l">Revenue</div></div><div class="stat"><div class="stat-v tg">${money(r.total_cashin)}</div><div class="stat-l">Cash in</div></div><div class="stat"><div class="stat-v tr">${money(r.total_cashout)}</div><div class="stat-l">Cash out</div></div><div class="stat"><div class="stat-v ta">${money(r.total_salary_expense)}</div><div class="stat-l">Salaries</div></div><div class="stat"><div class="stat-v ${parseFloat(r.net_profit)>=0?'tg':'tr'}">${money(r.net_profit)}</div><div class="stat-l">Net profit</div></div></div>
+    ${r.pages.length?`<div class="card mt"><div class="card-h"><div class="card-t">Pages (${r.pages.length})</div></div><div class="tw"><table><thead><tr><th>Page</th><th>Likes</th><th>Followers</th><th>Revenue</th><th>Cash in</th><th>Cash out</th></tr></thead><tbody>${r.pages.map(p=>`<tr><td><b>${p.page_name}</b></td><td>${num(p.current_likes)}</td><td>${num(p.followers)}</td><td class="tg">${money(p.monthly_generated_amount)}</td><td class="tg">${money(p.total_cashin)}</td><td class="tr">${money(p.total_cashout)}</td></tr>`).join('')}</tbody></table></div></div>`:''}
+    ${r.employees.length?`<div class="card mt"><div class="card-h"><div class="card-t">Employees (${r.employees.length})</div></div><div class="tw"><table><thead><tr><th>Name</th><th>Status</th><th>Base</th><th>Fine</th><th>Final</th></tr></thead><tbody>${r.employees.map(e=>`<tr><td><b>${e.employee_name}</b></td><td>${bdg(e.status)}</td><td>${money(e.base_salary)}</td><td class="tr">${money(e.fine_amount)}</td><td class="tg">${money(e.final_salary)}</td></tr>`).join('')}</tbody></table></div></div>`:''}
+    ${r.games.length?`<div class="card mt"><div class="card-h"><div class="card-t">Games (${r.games.length})</div></div><div class="tw"><table><thead><tr><th>Game</th><th>Added</th><th>Deducted</th><th>Balance</th></tr></thead><tbody>${r.games.map(g=>`<tr><td><b>${g.game_name}</b></td><td class="tg">${money(g.total_coins_added)}</td><td class="tr">${money(g.total_coins_deducted)}</td><td class="${parseFloat(g.coin_balance)>=0?'tg':'tr'}">${money(g.coin_balance)}</td></tr>`).join('')}</tbody></table></div></div>`:''}`;
+  }catch(e){el.innerHTML=`<div class="alert alert-e">${e.detail||'Error'}</div>`}
+}
+async function runPfRpt(){
+  const el=$('rpt-res');el.innerHTML='<div class="empty"><div class="spinner"></div></div>';
+  try{const r=await GET(`/api/v1/reports/platforms/${$('rpt-pid').value}?month=${$('rpt-m').value}`);
+    el.innerHTML=`<div class="stats"><div class="stat"><div class="stat-v tg">${money(r.grand_total_revenue)}</div><div class="stat-l">Revenue</div></div><div class="stat"><div class="stat-v tr">${money(r.grand_total_expense)}</div><div class="stat-l">Expense</div></div><div class="stat"><div class="stat-v ${parseFloat(r.grand_net_profit)>=0?'tg':'tr'}">${money(r.grand_net_profit)}</div><div class="stat-l">Net profit</div></div><div class="stat"><div class="stat-v ta">${r.total_groups}</div><div class="stat-l">Groups</div></div><div class="stat"><div class="stat-v">${r.total_employees}</div><div class="stat-l">Employees</div></div></div>
+    <div class="card mt"><div class="card-h"><div class="card-t">Groups breakdown</div></div><div class="tw"><table><thead><tr><th>Group</th><th>Revenue</th><th>Cash in</th><th>Cash out</th><th>Salary</th><th>Net</th></tr></thead><tbody>${r.groups.map(g=>`<tr><td><b>${g.group_name}</b></td><td class="tg">${money(g.total_page_revenue)}</td><td class="tg">${money(g.total_cashin)}</td><td class="tr">${money(g.total_cashout)}</td><td class="ta">${money(g.total_salary_expense)}</td><td class="${parseFloat(g.net_profit)>=0?'tg':'tr'}">${money(g.net_profit)}</td></tr>`).join('')}</tbody></table></div></div>`;
+  }catch(e){el.innerHTML=`<div class="alert alert-e">${e.detail||'Error'}</div>`}
+}
+async function runPgRpt(){
+  const el=$('rpt-res');el.innerHTML='<div class="empty"><div class="spinner"></div></div>';
+  try{const r=await GET(`/api/v1/reports/pages/${$('rpt-pgid').value}?month=${$('rpt-m').value}`);
+    el.innerHTML=`<div class="stats"><div class="stat"><div class="stat-v">${num(r.current_likes)}</div><div class="stat-l">Likes</div></div><div class="stat"><div class="stat-v">${num(r.followers)}</div><div class="stat-l">Followers</div></div><div class="stat"><div class="stat-v tg">${money(r.total_cashin)}</div><div class="stat-l">Cash in</div></div><div class="stat"><div class="stat-v tr">${money(r.total_cashout)}</div><div class="stat-l">Cash out</div></div><div class="stat"><div class="stat-v tg">${money(r.depositor_balance)}</div><div class="stat-l">Balance</div></div><div class="stat"><div class="stat-v ta">${r.depositor_count}</div><div class="stat-l">Depositors</div></div><div class="stat"><div class="stat-v">${r.transaction_count}</div><div class="stat-l">Transactions</div></div></div>`;
+  }catch(e){el.innerHTML=`<div class="alert alert-e">${e.detail||'Error'}</div>`}
+}
+
+// ─── PAGE MAP ─────────────────────────────────────────────────────────────────
+const PAGES={
+  dashboard:showDashboard,platforms:showPlatforms,'admin-users':showAdminUsers,
+  groups:showGroups,employees:showEmployees,pages:showPages,depositors:showDepositors,
+  games:showGames,'salary-cuts':showSalaryCuts,'follower-logs':showFollowerLogs,
+  'my-salary':showMySalary,reports:showReports,
+};
+function showEmpty(){render('<div class="empty">Page not found</div>')}
+
+// Enter keys
+$('l-pass').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin()});
+$('l-user').addEventListener('keydown',e=>{if(e.key==='Enter')$('l-pass').focus()});
+</script>
+</body>
+</html>
